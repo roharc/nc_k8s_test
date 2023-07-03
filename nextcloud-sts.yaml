@@ -1,0 +1,74 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: nextcloud
+  namespace: nc-sts  
+  labels:
+    app: nextcloud
+spec:
+  ports:
+    - port: 80
+  selector:
+    app: nextcloud
+    tier: frontend
+  type: NodePort
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: nextcloud
+  namespace: nc-sts  
+  labels:
+    app: nextcloud
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nextcloud
+      tier: frontend
+  template:
+    metadata:
+      labels:
+        app: nextcloud
+        tier: frontend
+    spec:
+      securityContext:
+        sysctls:
+        - name: net.ipv4.ip_unprivileged_port_start
+          value: "80"
+      containers:
+      - image: nextcloud
+        name: nextcloud
+        securityContext:
+          runAsUser: 65534
+          runAsGroup: 65534
+          allowPrivilegeEscalation: false
+          capabilities:
+            add: ["SYS_TIME"]
+        env:
+        - name: MYSQL_HOST
+          value: nextcloud-mysql
+        - name: MYSQL_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: nc-mysql-pass
+              key: password
+        - name: MYSQL_USER
+          value: nextcloud
+        - name: MYSQL_DATABASE
+          value: nextcloud    
+        ports:
+        - containerPort: 80
+          name: nextcloud
+        volumeMounts:
+        - name: nextcloud-persistent-storage
+          mountPath: /var/www/html
+  volumeClaimTemplates:
+    - metadata:
+        name: nextcloud-persistent-storage
+      spec:
+        accessModes: [ "ReadWriteMany" ]
+        storageClassName: "nfs-csi"
+        resources:
+          requests:
+            storage: 30Gi            

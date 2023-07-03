@@ -1,0 +1,71 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: nextcloud-mysql
+  namespace: nc-sts  
+  labels:
+    app: nextcloud
+spec:
+  ports:
+    - port: 3306
+  selector:
+    app: nextcloud
+    tier: mysql
+  clusterIP: None
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: nc-mysql
+  namespace: nc-sts  
+  labels:
+    app: nextcloud
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nextcloud
+      tier: mysql
+  template:
+    metadata:
+      labels:
+        app: nextcloud
+        tier: mysql
+    spec:
+      containers:
+      - image: mysql
+        name: mysql
+        securityContext:
+          allowPrivilegeEscalation: false
+          runAsUser: 65534  
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: nc-mysql-pass
+              key: password
+        - name: MYSQL_DATABASE
+          value: nextcloud
+        - name: MYSQL_USER
+          value: nextcloud
+        - name: MYSQL_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: nc-mysql-pass
+              key: password
+        ports:
+        - containerPort: 3306
+          name: mysql
+        volumeMounts:
+        - name: mysql-persistent-storage
+          mountPath: /var/lib/mysql
+  volumeClaimTemplates:
+    - metadata:
+        name: mysql-persistent-storage
+      spec:
+        accessModes: [ "ReadWriteMany" ]
+        storageClassName: "nfs-csi"
+        resources:
+          requests:
+            storage: 4Gi
+
