@@ -2,7 +2,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: nextcloud
-  namespace: nc-sts  
+  namespace: nc  
   labels:
     app: nextcloud
 spec:
@@ -18,7 +18,7 @@ apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: nc-pvc
-  namespace: nc-sts  
+  namespace: nc  
 spec:
   storageClassName: nfs-csi
   accessModes:
@@ -31,7 +31,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: nextcloud
-  namespace: nc-sts  
+  namespace: nc  
   labels:
     app: nextcloud
 spec:

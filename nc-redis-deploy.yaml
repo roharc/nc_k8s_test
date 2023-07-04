@@ -5,7 +5,7 @@ metadata:
   labels:
     app: nextcloud
   name: nc-redis
-  namespace: nc-sts
+  namespace: nc
 spec:
   ports:
   - port: 6379
@@ -20,7 +20,7 @@ apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: nc-redis-pvc
-  namespace: nc-sts  
+  namespace: nc  
 spec:
   storageClassName: nfs-csi
   accessModes:
@@ -37,7 +37,7 @@ metadata:
     app: nextcloud
     tier: redis  
   name: nc-redis
-  namespace: nc-sts
+  namespace: nc
 spec:
   replicas: 1
   selector:
