@@ -8,10 +8,24 @@ metadata:
 spec:
   ports:
     - port: 3306
+      protocol: TCP
   selector:
     app: nextcloud
     tier: mysql
   clusterIP: None
+---    
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mysql-pvc
+  namespace: nc-sts  
+spec:
+  storageClassName: nfs-csi
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 4Gi
 ---
 apiVersion: apps/v1
 kind: StatefulSet
@@ -21,6 +35,7 @@ metadata:
   labels:
     app: nextcloud
 spec:
+  serviceName: nextcloud-mysql
   replicas: 1
   selector:
     matchLabels:
@@ -32,6 +47,10 @@ spec:
         app: nextcloud
         tier: mysql
     spec:
+      volumes:
+        - name: mysql-p-vol
+          persistentVolumeClaim:
+            claimName: mysql-pvc 
       containers:
       - image: mysql
         name: mysql
@@ -57,15 +76,5 @@ spec:
         - containerPort: 3306
           name: mysql
         volumeMounts:
-        - name: mysql-persistent-storage
+        - name: mysql-p-vol
           mountPath: /var/lib/mysql
-  volumeClaimTemplates:
-    - metadata:
-        name: mysql-persistent-storage
-      spec:
-        accessModes: [ "ReadWriteMany" ]
-        storageClassName: "nfs-csi"
-        resources:
-          requests:
-            storage: 4Gi
-

@@ -8,13 +8,27 @@ metadata:
 spec:
   ports:
     - port: 80
+      nodePort: 30715
   selector:
     app: nextcloud
     tier: frontend
   type: NodePort
 ---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: nc-pvc
+  namespace: nc-sts  
+spec:
+  storageClassName: nfs-csi
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 30Gi
+---
 apiVersion: apps/v1
-kind: StatefulSet
+kind: Deployment
 metadata:
   name: nextcloud
   namespace: nc-sts  
@@ -36,6 +50,10 @@ spec:
         sysctls:
         - name: net.ipv4.ip_unprivileged_port_start
           value: "80"
+      volumes:
+        - name: nc-p-vol      
+          persistentVolumeClaim:
+            claimName: nc-pvc
       containers:
       - image: nextcloud
         name: nextcloud
@@ -61,14 +79,5 @@ spec:
         - containerPort: 80
           name: nextcloud
         volumeMounts:
-        - name: nextcloud-persistent-storage
+        - name: nc-p-vol
           mountPath: /var/www/html
-  volumeClaimTemplates:
-    - metadata:
-        name: nextcloud-persistent-storage
-      spec:
-        accessModes: [ "ReadWriteMany" ]
-        storageClassName: "nfs-csi"
-        resources:
-          requests:
-            storage: 30Gi            

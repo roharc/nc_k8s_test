@@ -1,0 +1,67 @@
+apiVersion: v1
+kind: Service
+metadata:
+  creationTimestamp: null
+  labels:
+    app: nextcloud
+  name: nc-redis
+  namespace: nc-sts
+spec:
+  ports:
+  - port: 6379
+    protocol: TCP
+    targetPort: 6379
+  selector:
+    app: nextcloud
+    tier: redis  
+  type: ClusterIP
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: nc-redis-pvc
+  namespace: nc-sts  
+spec:
+  storageClassName: nfs-csi
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 4Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    app: nextcloud
+    tier: redis  
+  name: nc-redis
+  namespace: nc-sts
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nextcloud
+      tier: redis  
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: nextcloud
+        tier: redis  
+    spec:
+      volumes:
+        - name: nc-redis-p-vol
+          persistentVolumeClaim:
+            claimName: nc-redis-pvc      
+      containers:
+      - image: redis
+        name: redis
+        securityContext:
+          runAsUser: 65534
+          runAsGroup: 65534          
+        volumeMounts:
+          - mountPath: /data
+            name: nc-redis-p-vol          
