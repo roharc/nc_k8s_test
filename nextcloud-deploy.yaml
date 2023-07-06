@@ -75,6 +75,8 @@ spec:
           value: nextcloud
         - name: MYSQL_DATABASE
           value: nextcloud    
+        - name: REDIS_HOST    
+          value: nc-redis 
         ports:
         - containerPort: 80
           name: nextcloud
