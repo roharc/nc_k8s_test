@@ -40,19 +40,6 @@ spec:
     requests:
       storage: 4Gi
 ---
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: red-ses
-  namespace: nc
-spec:
-  storageClassName: nfs-csi
-  accessModes:
-    - ReadWriteMany
-  resources:
-    requests:
-      storage: 4Gi
----
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -83,9 +70,6 @@ spec:
         - name: nc-s-vol
           persistentVolumeClaim:
             claimName: nc-sessions
-        - name: redis-session
-          persistentVolumeClaim:
-            claimName: red-ses              
       containers:
       - image: nextcloud
         name: nextcloud
@@ -117,5 +101,3 @@ spec:
           mountPath: /var/www/html
         - name: nc-s-vol
           mountPath: /tmp    
-        - name: redis-session
-          mountPath: /usr/local/etc/php/conf.d/
