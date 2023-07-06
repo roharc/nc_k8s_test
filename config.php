@@ -1,7 +1,7 @@
 <?php
 $CONFIG = array (
   'htaccess.RewriteBase' => '/',
-  'memcache.local' => '\\OC\\Memcache\\APCu',
+  'memcache.local' => '\OC\Memcache\APCu',
   'apps_paths' => 
   array (
     0 => 
@@ -37,6 +37,7 @@ $CONFIG = array (
   'dbpassword' => 'xardas',
   'installed' => true,
   'filelocking.enabled' => true,
+  'memcache.distributed' => '\OC\Memcache\Redis',
   'memcache.locking' => '\OC\Memcache\Redis',
   'redis' => array(
        'host' => 'nc-redis',
