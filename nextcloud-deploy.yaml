@@ -27,6 +27,19 @@ spec:
     requests:
       storage: 30Gi
 ---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: nc-sessions
+  namespace: nc
+spec:
+  storageClassName: nfs-csi
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 4Gi
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -54,6 +67,9 @@ spec:
         - name: nc-p-vol      
           persistentVolumeClaim:
             claimName: nc-pvc
+        - name: nc-s-vol
+          persistentVolumeClaim:
+            claimName: nc-sessions
       containers:
       - image: nextcloud
         name: nextcloud
@@ -83,3 +99,5 @@ spec:
         volumeMounts:
         - name: nc-p-vol
           mountPath: /var/www/html
+        - name: nc-s-vol
+          mountPath: /tmp    
